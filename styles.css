@@ -67,15 +67,21 @@ h1 {
 /* Temporär visuell mullvad , byt gärna mot egen grafik. */
 
 .cell .mole {
-    width: 65%; 
-    height: 65%; 
-    border-radius: 50%;
-    background: radial-gradient(circle at 50% 60%, #5b3b1a, #2d1a0a 60%, #000
-    100%);
+    width: 80%;
+    height: 80%;
+    background-image: url("./img/mole-idle.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
 }
 
 .mole.hit {
-    opacity: 0.4;
-    transform: scale(0.8);
-    transition: opacity 0.15s ease-out, transform 0.15s ease-out;
+    background-image: url("./img/mole-bonk.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+
+    opacity: 0.9;
+    transform: scale(1);
+    transition: opacity 0.15s ease-out, transform 0.5s ease-out;
 }

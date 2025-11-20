@@ -50,8 +50,9 @@ export class Mole {
             if (typeof this.onHit === 'function') {
                 this.onHit(this);
             }
-        }, 150);
-       } else {
+        }, 300);
+       
+    } else {
         this.hide();
         if (typeof this.onHit === 'function') {
             this.onHit(this);
