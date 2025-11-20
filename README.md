@@ -5,9 +5,11 @@
 ## Uppgift
 Skapa ett enkelt Whack-A-Mole spel.
 
-## Syfte och koppling till kursmål: Träna DOM-manipulation, eventhantering, modulär kod
-## (ES-moduler) och enkel tillgänglighet. Detta adresserar bl.a. kursmålen om eventhantering,
-## modulära komponenter, DOM-interaktion och WCAG-anpassning.
+## Syfte och koppling till kursmål: 
+Träna DOM-manipulation, eventhantering, modulär kod
+(ES-moduler) och enkel tillgänglighet. Detta adresserar bl.a. kursmålen om eventhantering,
+modulära komponenter, DOM-interaktion och WCAG-anpassning.
+
 ## Regler för dagens övning
 • Vanilla HTML/CSS/JS i webbläsaren. Inga ramverk.
 • ES-moduler med import/export. Inga globala variabler.
