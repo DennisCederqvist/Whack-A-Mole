@@ -71,6 +71,8 @@ export class Game {
         this.state.running = true;
 
         this.updateHud();
+
+        this.startTimer();
         
         console.log('calling spawnMole() from start()');
         this.spawnMole();
@@ -89,31 +91,56 @@ export class Game {
 
 
         const mole = new Mole({
-            cellEl,
-            ttl: this.getRandomDelay(500, 1500),
-            onHit: () => {
-                this._activeMoles.delete(mole);
-                this.state.score++;
-                this.updateHud();
+        cellEl,
+        ttl: this.getRandomDelay(500, 1500),
 
-                if (this.state.running){
-                    const delay = this.getRandomDelay(200, 1000)
-                    setTimeout(() => this.spawnMole(), delay);
+        onHit: () => {
+            this._activeMoles.delete(mole);
+            this.state.score++;
+            this.updateHud();
+
+            if (this.state.running) {
+                const delay = this.getRandomDelay(200, 1000);
+
+                // rensa ev. gammal spawn-timeout
+                if (this._spawnId !== null) {
+                    clearTimeout(this._spawnId);
+                    this._spawnId = null;
                 }
 
-            },
+                this._spawnId = setTimeout(() => {
+                    this._spawnId = null; // städa bort ID:t
 
-            onExpire: () => {
-                this._activeMoles.delete(mole);
-                this.state.misses++;
-                this.updateHud();
-
-                if (this.state.running) {
-                    const delay = this.getRandomDelay(200, 1000)
-                    setTimeout(() => this.spawnMole(), delay);
-                }
+                    if (this.state.running) {
+                        this.spawnMole();
+                    }
+                }, delay);
             }
-        });
+        },
+
+        onExpire: () => {
+            this._activeMoles.delete(mole);
+            this.state.misses++;
+            this.updateHud();
+
+            if (this.state.running) {
+                const delay = this.getRandomDelay(200, 1000);
+
+                if (this._spawnId !== null) {
+                    clearTimeout(this._spawnId);
+                    this._spawnId = null;
+                }
+
+                this._spawnId = setTimeout(() => {
+                    this._spawnId = null;
+
+                    if (this.state.running) {
+                        this.spawnMole();
+                    }
+                }, delay);
+            }
+        }
+    });
 
         this._activeMoles.add(mole);
         mole.show();
@@ -135,6 +162,84 @@ export class Game {
             this.updateHud();
         }
 
+    }
+
+   startTimer() {
+        if (this._tickId !== null) {
+            clearInterval(this._tickId);
+            this._tickId = null;
+        }
+
+        this._tickId = setInterval(() => {
+            if (!this.state.running) {
+                clearInterval(this._tickId);
+                this._tickId = null;
+                return;
+            }
+
+            this.state.timeLeft--;
+            if (this.state.timeLeft < 0) {
+                this.state.timeLeft = 0;
+            }
+            this.updateHud();
+
+            if (this.state.timeLeft <= 0) {
+                this.endGame();
+            }
+        }, 1000);
+    }
+
+    reset() {
+        if (this._tickId !== null){
+            clearInterval(this._tickId);
+            this._tickId = null;
+        }
+        
+        if (this._spawnId !== null) {
+            clearTimeout(this._spawnId);
+            this._spawnId = null;
+        }
+
+        this.state.running = false;
+
+        for (const mole of this._activeMoles) {
+            mole.hide();
+        }
+
+        this.state.score = 0;
+        this.state.misses = 0;
+        this.state.timeLeft = this.duration;
+
+        this.updateHud();
+
+    }
+
+
+    endGame() {
+        this.state.running = false;
+
+        if (this._tickId !== null) {
+            clearInterval(this._tickId);
+            this._tickId = null;
+        }
+
+        for (const mole of this._activeMoles) {
+            mole.hide();
+        }
+
+        this._activeMoles.clear();
+
+        this.state.timeLeft = 0;
+        this.updateHud();
+
+        const finalScore = this.state.score - this.state.misses;
+
+        alert(
+            `GAME OVER!\n\n` +
+            `Poäng: ${this.state.score}\n` +
+            `Missar: ${this.state.misses}\n` +
+            `Slutpoäng: ${finalScore}`
+        );
     }
 
 }
