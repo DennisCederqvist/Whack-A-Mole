@@ -12,10 +12,12 @@ body {
     display: grid; 
     place-items: center;
     font-family: system-ui, sans-serif; 
+    background-color:#ccc;
 }
 
 h1 {
     text-align: center;
+    color: rgb(27, 172, 7);
 }
 
 .container { 

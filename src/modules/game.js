@@ -56,6 +56,13 @@ export class Game {
         return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
+    getMaxActiveMoles() {
+        if (this.state.score >= 30) return 3;
+        if (this.state.score >= 10) return 2;
+        return 1;
+    }
+
+
     start() {
 
         console.log('start() called')
@@ -78,74 +85,134 @@ export class Game {
         this.spawnMole();
     }
 
+    // spawnMole() {
+    //     if (!this.state.running) return;
+
+    //     const cells = Array.from(this.boardEl.querySelectorAll('.cell'));
+
+    //     const emptyCells = cells.filter(cell => !cell.querySelector('.mole'));
+    //     if (emptyCells.length === 0) return;
+
+    //     const randomIndex = Math.floor(Math.random() * emptyCells.length);
+    //     const cellEl = emptyCells[randomIndex];
+
+
+    //     const mole = new Mole({
+    //     cellEl,
+    //     ttl: this.getRandomDelay(500, 1500),
+
+    //     onHit: () => {
+    //         this._activeMoles.delete(mole);
+    //         this.state.score++;
+    //         this.updateHud();
+
+    //         if (this.state.running) {
+    //             const delay = this.getRandomDelay(200, 1000);
+
+    //             // rensa ev. gammal spawn-timeout
+    //             if (this._spawnId !== null) {
+    //                 clearTimeout(this._spawnId);
+    //                 this._spawnId = null;
+    //             }
+
+    //             this._spawnId = setTimeout(() => {
+    //                 this._spawnId = null; // städa bort ID:t
+
+    //                 if (this.state.running) {
+    //                     this.spawnMole();
+    //                 }
+    //             }, delay);
+    //         }
+    //     },
+
+    //     onExpire: () => {
+    //         this._activeMoles.delete(mole);
+    //         this.state.misses++;
+    //         this.updateHud();
+
+    //         if (this.state.running) {
+    //             const delay = this.getRandomDelay(200, 1000);
+
+    //             if (this._spawnId !== null) {
+    //                 clearTimeout(this._spawnId);
+    //                 this._spawnId = null;
+    //             }
+
+    //             this._spawnId = setTimeout(() => {
+    //                 this._spawnId = null;
+
+    //                 if (this.state.running) {
+    //                     this.spawnMole();
+    //                 }
+    //             }, delay);
+    //         }
+    //     }
+    // });
+
+    //     this._activeMoles.add(mole);
+    //     mole.show();
+
+    // }
+
     spawnMole() {
         if (!this.state.running) return;
 
         const cells = Array.from(this.boardEl.querySelectorAll('.cell'));
-
         const emptyCells = cells.filter(cell => !cell.querySelector('.mole'));
-        if (emptyCells.length === 0) return;
 
-        const randomIndex = Math.floor(Math.random() * emptyCells.length);
-        const cellEl = emptyCells[randomIndex];
+        // hur många mullvadar vill vi ha totalt?
+        const maxMoles = this.getMaxActiveMoles();
 
+        // hur många har vi redan?
+        const currentMoles = this._activeMoles.size;
 
-        const mole = new Mole({
-        cellEl,
-        ttl: this.getRandomDelay(500, 1500),
+        // hur många nya vi "får" spawna just nu
+        const toSpawn = Math.min(
+            maxMoles - currentMoles,
+            emptyCells.length
+        );
 
-        onHit: () => {
-            this._activeMoles.delete(mole);
-            this.state.score++;
-            this.updateHud();
+        if (toSpawn <= 0) return; // redan fullt, eller inga tomma rutor
 
-            if (this.state.running) {
-                const delay = this.getRandomDelay(200, 1000);
+        // spawna 'toSpawn' stycken nya mullvadar i slumpade tomma rutor
+        let availableCells = [...emptyCells];
 
-                // rensa ev. gammal spawn-timeout
-                if (this._spawnId !== null) {
-                    clearTimeout(this._spawnId);
-                    this._spawnId = null;
-                }
+        for (let i = 0; i < toSpawn; i++) {
+            const randomIndex = Math.floor(Math.random() * availableCells.length);
+            const cellEl = availableCells.splice(randomIndex, 1)[0];
 
-                this._spawnId = setTimeout(() => {
-                    this._spawnId = null; // städa bort ID:t
+            const mole = new Mole({
+                cellEl,
+                ttl: this.getRandomDelay(500, 1500),
 
-                    if (this.state.running) {
-                        this.spawnMole();
-                    }
-                }, delay);
-            }
-        },
-
-        onExpire: () => {
-            this._activeMoles.delete(mole);
-            this.state.misses++;
-            this.updateHud();
-
-            if (this.state.running) {
-                const delay = this.getRandomDelay(200, 1000);
-
-                if (this._spawnId !== null) {
-                    clearTimeout(this._spawnId);
-                    this._spawnId = null;
-                }
-
-                this._spawnId = setTimeout(() => {
-                    this._spawnId = null;
+                onHit: () => {
+                    this._activeMoles.delete(mole);
+                    this.state.score++;
+                    this.updateHud();
 
                     if (this.state.running) {
-                        this.spawnMole();
+                        const delay = this.getRandomDelay(200, 1000);
+                        setTimeout(() => this.spawnMole(), delay);
                     }
-                }, delay);
-            }
+                },
+
+                onExpire: () => {
+                    this._activeMoles.delete(mole);
+                    this.state.misses++;
+                    this.updateHud();
+
+                    if (this.state.running) {
+                        const delay = this.getRandomDelay(200, 1000);
+                        setTimeout(() => this.spawnMole(), delay);
+                    }
+                }
+            });
+
+            this._activeMoles.add(mole);
+            mole.show();
         }
-    });
-
-        this._activeMoles.add(mole);
-        mole.show();
-
     }
+
 
     handleBoardClick(e) {
         const cell = e.target.closest('.cell');
