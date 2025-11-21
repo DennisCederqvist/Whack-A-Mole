@@ -160,21 +160,16 @@ export class Game {
         const cells = Array.from(this.boardEl.querySelectorAll('.cell'));
         const emptyCells = cells.filter(cell => !cell.querySelector('.mole'));
 
-        // hur många mullvadar vill vi ha totalt?
+        
         const maxMoles = this.getMaxActiveMoles();
-
-        // hur många har vi redan?
         const currentMoles = this._activeMoles.size;
 
-        // hur många nya vi "får" spawna just nu
-        const toSpawn = Math.min(
-            maxMoles - currentMoles,
-            emptyCells.length
-        );
+        
+        const toSpawn = Math.min(maxMoles - currentMoles, emptyCells.length);
 
-        if (toSpawn <= 0) return; // redan fullt, eller inga tomma rutor
+        if (toSpawn <= 0) return;
 
-        // spawna 'toSpawn' stycken nya mullvadar i slumpade tomma rutor
+        
         let availableCells = [...emptyCells];
 
         for (let i = 0; i < toSpawn; i++) {
@@ -192,7 +187,18 @@ export class Game {
 
                     if (this.state.running) {
                         const delay = this.getRandomDelay(200, 1000);
-                        setTimeout(() => this.spawnMole(), delay);
+
+                        if (this._spawnId !== null) {
+                            clearTimeout(this._spawnId);
+                            this._spawnId = null;
+                        }
+
+                        this._spawnId = setTimeout(() => {
+                            this._spawnId = null;
+                            if (this.state.running) {
+                                this.spawnMole();
+                            }
+                        }, delay);
                     }
                 },
 
@@ -203,15 +209,33 @@ export class Game {
 
                     if (this.state.running) {
                         const delay = this.getRandomDelay(200, 1000);
-                        setTimeout(() => this.spawnMole(), delay);
+
+                        if (this._spawnId !== null) {
+                            clearTimeout(this._spawnId);
+                            this._spawnId = null;
+                        }
+
+                        this._spawnId = setTimeout(() => {
+                            this._spawnId = null;
+                            if (this.state.running) {
+                                this.spawnMole();
+                            }
+                        }, delay);
                     }
                 }
             });
 
-            this._activeMoles.add(mole);
-            mole.show();
+            const appearDelay = this.getRandomDelay(0, 400);
+
+            setTimeout(() => {
+                if (!this.state.running) return;
+
+                this._activeMoles.add(mole);
+                mole.show();
+            }, appearDelay);
         }
     }
+
 
 
     handleBoardClick(e) {
